@@ -1,0 +1,76 @@
+title: "Machine Learning: Predicting the Cut of a Diamond"
+author: "Arya Shah"
+---
+```{r}
+library(neuralnet)
+library(caret)
+library(tidyverse)
+```
+```{r}
+?diamonds
+```
+```{r}
+head(diamonds)
+```
+```{r}
+df <- diamonds%>%
+  filter(cut %in% c("Ideal","Good"))
+```
+```{r}
+dim(df)
+```
+```{r}
+df$binary <- ifelse(df$cut == "Ideal", 1, 0)
+head(df)
+```
+```{r}
+df$binary <- as.factor(df$binary)
+names(df)
+```
+
+
+```{r}
+df <- df[ , -2]
+head(df)
+```
+
+
+```{r}
+rows <- createDataPartition(df$binary, p=.8, list=F, times=1)
+train <- df[rows,]
+head(train)
+```
+
+
+```{r}
+test <- df[-rows,]
+```
+
+
+```{r}
+control <- trainControl(method="repeatedcv", number=2, repeats=2)
+
+model <- train(binary ~ ., data=train, method="ranger", trControl=control)
+```
+```{r}
+model
+```
+#Trying with 5 folds, repeated 5 times
+```{r}
+control1 <- trainControl(method="repeatedcv", number=5, repeats=5)
+
+model1 <- train(binary ~ ., data=train, method="ranger", trControl=control1)
+
+model1
+```
+```{r}
+pred <- predict(model,test)
+confusionMatrix(pred,test$binary)
+```
+
+
+```{r}
+pred1 <- predict(model1,test)
+confusionMatrix(pred1,test$binary)
+```
+
